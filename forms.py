@@ -25,3 +25,8 @@ class AddEmployee(FlaskForm):
     start_date = DateField('Начало отпуска')
     end_date = DateField('Конец отпуска')
 
+
+class DeleteEmployee(FlaskForm):
+    """Класс форма DeleteEmployee для валидации и удаления данных из бд"""
+    employees = SelectField('Сотрудники', choices=[], coerce=str)
+
