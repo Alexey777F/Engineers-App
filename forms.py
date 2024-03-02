@@ -42,3 +42,9 @@ class EditEmployee(FlaskForm):
     city = StringField('customer', validators=[DataRequired(), Length(min=1, max=50)])
     phone_number = StringField('phone_number', validators=[DataRequired(), Length(min=10, max=11)])
     email = StringField('email', validators=[DataRequired(), Length(min=1, max=50)])
+
+
+class AddTask(FlaskForm):
+    """Класс форма AddTask для валидации и сохранения задачи в бд"""
+    direction = SelectField('Направление', coerce=str)
+    description = StringField('email', validators=[DataRequired(), Length(min=1, max=50)])
