@@ -75,6 +75,16 @@ class Engineer(Base):
             except Exception as e:
                 logger.error(f"Ошибка {e} при добавлении данных в таблицу engineer_directions")
                 session.rollback()
+
+    @classmethod
+    def get_id_by_username(cls, username: str):
+        """Метод класса который возвращает айди инженера по переданному username"""
+        with sessionfactory() as session:
+            engineers = session.query(cls).filter(cls.username == username).first()
+            if engineers:
+                return engineers.id
+            else:
+                return None
 class Direction(Base):
     __tablename__ = 'direction'
     id = Column(Integer(), primary_key=True)
