@@ -85,6 +85,18 @@ class Engineer(Base):
                 return engineers.id
             else:
                 return None
+
+    @classmethod
+    def get_engineers(cls):
+        """Возвращает словарь c ключом - айди инженера, значение ФИО инженера"""
+        with sessionfactory() as session:
+            engineers = session.query(cls).all()
+            if engineers:
+                engineers_dict = {engineer.id: f"{engineer.last_name} {engineer.name} {engineer.patronymic}" for engineer in
+                                  engineers}
+                return engineers_dict
+            else:
+                return None
 class Direction(Base):
     __tablename__ = 'direction'
     id = Column(Integer(), primary_key=True)
