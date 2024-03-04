@@ -97,6 +97,16 @@ class Engineer(Base):
                 return engineers_dict
             else:
                 return None
+
+    @classmethod
+    def get_fullname_by_id(cls, id: str):
+        """Метод класса который добавляет инженера в базу"""
+        with sessionfactory() as session:
+            engineer = session.query(cls).filter_by(id=id).first()
+            if engineer:
+                return f'{engineer.last_name} {engineer.name} {engineer.patronymic}'
+            else:
+                return None
 class Direction(Base):
     __tablename__ = 'direction'
     id = Column(Integer(), primary_key=True)
