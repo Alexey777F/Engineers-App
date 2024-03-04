@@ -54,6 +54,27 @@ class Engineer(Base):
                 logger.error(f"Ошибка {e} при добавлении данных в таблицу Engineer(Инженеры)")
                 session.rollback()
 
+    @classmethod
+    def add_engineer_directions(cls, username: str, last_name: str, choice_directions: List):
+        """Метод класса который добавляет связи направлений деятельности с инженером"""
+        with sessionfactory() as session:
+            engineers_data = {f'{last_name}': choice_directions}
+            for last_na, networks in engineers_data.items():
+                engineer = session.query(cls).filter(cls.username == username).first()
+                if engineer:
+                    for network in networks:
+                        direction = session.query(Direction).filter(Direction.name == network).first()
+                        if direction:
+                            engineer.direction.append(direction)
+                        else:
+                            logger.error(f"Направление '{network}' не найдено в базе данных.")
+                else:
+                    return None
+            try:
+                session.commit()
+            except Exception as e:
+                logger.error(f"Ошибка {e} при добавлении данных в таблицу engineer_directions")
+                session.rollback()
 class Direction(Base):
     __tablename__ = 'direction'
     id = Column(Integer(), primary_key=True)
