@@ -162,6 +162,18 @@ class Engineer(Base):
             else:
                 return None
         return data
+
+    @classmethod
+    def get_username(cls, username: str):
+        """Метод класса который возвращает обьект инженера по его username"""
+        with sessionfactory() as session:
+            engineer = session.query(cls).filter_by(username=username).first()
+            if engineer:
+                return engineer
+            else:
+                return None
+
+
 class Direction(Base):
     __tablename__ = 'direction'
     id = Column(Integer(), primary_key=True)
