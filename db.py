@@ -127,6 +127,41 @@ class Engineer(Base):
                 return [engineer.last_name, engineer.name, engineer.patronymic, engineer.working_position, engineer.city, engineer.phone_number, engineer.email]
             else:
                 return None
+
+    @classmethod
+    def get_all_eng_data(cls):
+        """Метод класса который возвращает список с данными по инженеру его направлений деятельности, количество задач,
+        дату последней задачи и даты начала и конца отпуска каждого инженера"""
+        data = []
+        dates_of_vacations = []
+        dates_of_last_tasks = []
+        task_list = []
+        with sessionfactory() as session:
+            engineers = session.query(cls).all()
+            if engineers:
+                for engineer in engineers:
+                    tasks_count = session.query(Task).filter(Task.engineer_id == engineer.id).count()
+                    task_list.append(tasks_count)
+                    last_order_date = session.query(Task.create_date).filter(Task.engineer_id == engineer.id).order_by(
+                        Task.create_date.desc()).first()
+                    if last_order_date is not None:
+                        formatted_date = last_order_date[0].strftime('%d.%m.%Y')
+                        dates_of_last_tasks.append(formatted_date)
+                    else:
+                        dates_of_last_tasks.append("Нет задач")
+                    vacations = session.query(Vacation).filter(Vacation.engineer_id == engineer.id).first()
+                    if vacations is not None:
+                        vacation_dates = f'{vacations.start_date} - {vacations.end_date}'
+                        dates_of_vacations.append(vacation_dates)
+                    else:
+                        print("Отпуск NONE")
+                for i, engineer in enumerate(engineers):
+                    directions = ', '.join([direction.name for direction in engineer.direction])
+                    data.append([i + 1, engineer.last_name, engineer.name, engineer.patronymic, directions,
+                                 engineer.working_position, engineer.city, engineer.phone_number, engineer.email, task_list[i], dates_of_last_tasks[i], dates_of_vacations[i]])
+            else:
+                return None
+        return data
 class Direction(Base):
     __tablename__ = 'direction'
     id = Column(Integer(), primary_key=True)
