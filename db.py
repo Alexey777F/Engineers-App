@@ -173,7 +173,24 @@ class Engineer(Base):
             else:
                 return None
 
-
+    @classmethod
+    def delete_engineer(cls, employee_id: str):
+        """Метод класса который удаляет инженера из базы по переданному айди инженера"""
+        with sessionfactory() as session:
+            engineer = session.query(cls).filter_by(id=employee_id).first()
+            if engineer:
+                session.delete(engineer)
+                vacation_records = session.query(Vacation).filter_by(engineer_id=employee_id).all()
+                for record in vacation_records:
+                    session.delete(record)
+                try:
+                    session.commit()
+                    print(f"Инженер с id {employee_id} успешно удален")
+                except Exception as e:
+                    logger.error(f"Ошибка {e} при удалении инженера с id {employee_id}")
+                    session.rollback()
+            else:
+                logger.error(f"Инженер с id {employee_id} не найден")
 class Direction(Base):
     __tablename__ = 'direction'
     id = Column(Integer(), primary_key=True)
