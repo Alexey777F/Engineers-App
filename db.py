@@ -39,6 +39,20 @@ class Engineer(Base):
     tasks = relationship('Task', backref='assigned_engineer', cascade='all, delete-orphan')
     vacations = relationship('Vacation', cascade='all, delete-orphan')
 
+    @classmethod
+    def add_engineer(cls, username, password, last_name, name, patronymic, working_position, city, phone_number, email,
+                     created_on):
+        """Метод класса который добавляет инженера в базу"""
+        engineer = cls(username=username, password=password, last_name=last_name, name=name, patronymic=patronymic,
+                       working_position=working_position, city=city, phone_number=phone_number, email=email,
+                       created_on=created_on)
+        with sessionfactory() as session:
+            session.add(engineer)
+            try:
+                session.commit()
+            except Exception as e:
+                logger.error(f"Ошибка {e} при добавлении данных в таблицу Engineer(Инженеры)")
+                session.rollback()
 
 class Direction(Base):
     __tablename__ = 'direction'
