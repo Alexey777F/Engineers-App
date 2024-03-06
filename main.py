@@ -154,3 +154,23 @@ def add_employee(username, engineer_name, working_position, short_name):
     return render_template("add_employee.html", username=username, engineer_name=engineer_name,
                            working_position=working_position, short_name=short_name, form=form)
 
+
+@app.route('/admin/employee/edit_employee', methods=["POST", "GET"])
+@set_engineer_session
+def edit_employee(username, engineer_name, working_position, short_name):
+    """Роутер /edit_employee, который форму редактирования для сотрудника"""
+    form = EditEmployee()
+    if form.validate_on_submit():
+        username_form = form.username.data
+        password = form.password.data
+        last_name = form.last_name.data
+        name = form.name.data
+        patronymic = form.patronymic.data
+        working_position = form.working_position.data
+        city = form.city.data
+        phone_number = form.phone_number.data
+        email = form.email.data
+        # запись в бд
+        return redirect(url_for("admin_employee"))
+    return render_template("edit_employee.html", username=username, engineer_name=engineer_name,
+                           working_position=working_position, short_name=short_name, form=form)
