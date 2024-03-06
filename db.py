@@ -314,3 +314,18 @@ class EngineerCalculateMetriks:
             if date in [d.strftime("%d.%m.%Y") for d in dates]:
                 potential_managers.remove(str(engineer_id))
         return potential_managers
+
+    def count_tasks(self, find_vacation: List) -> List:
+        """Функция которая в зависимости от списка поданных сотрудников находит количество задач каждого сотрудника и сравнивает результат"""
+        with sessionfactory() as session:
+            engineer_tasks = {}
+            for engineer_id in find_vacation:
+                tasks_count = session.query(Task).filter(Task.engineer_id == engineer_id).count()
+                engineer_tasks[engineer_id] = tasks_count if tasks_count else 0
+            # Сравниваем количество задач между инженерами
+            if engineer_tasks[find_vacation[0]] == engineer_tasks[find_vacation[1]]:
+                return find_vacation
+            else:
+                # Должна вернуть список из 1-го значения - айди инженера у кого меньше заявок
+                return [min(find_vacation, key=lambda x: engineer_tasks[x])]
+
