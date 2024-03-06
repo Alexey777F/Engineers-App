@@ -287,3 +287,15 @@ class Status(Base):
                 logger.error(f"Ошибка {e} при добавлении данных в таблицу Status(Статус)")
                 session.rollback()
 
+
+class EngineerCalculateMetriks:
+    """Класс для фильтрации данных по разным параметрам"""
+    # @lru_cache(maxsize=None)
+    def engineers_directions_dict(self) -> Dict:
+        """Метод, который возвращает словарь {id: [список направлений}"""
+        engineer_direction_dict = {}
+        with sessionfactory() as session:
+            engineers = session.query(Engineer).all()
+            for engineer in engineers:
+                engineer_direction_dict[f"{engineer.id}"] = [direction.name for direction in engineer.direction]
+        return engineer_direction_dict
