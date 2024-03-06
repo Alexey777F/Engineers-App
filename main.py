@@ -85,3 +85,40 @@ def admin_employee(username, engineer_name, working_position, short_name):
                             short_name=short_name, engineer_data=engineer_data)
 
 
+@app.route('/admin/add_task', methods=["POST", "GET"])
+@set_engineer_session
+def add_task(username, engineer_name, working_position, short_name):
+    """Роутер /add_task, который проверят ввод данных из формы и назначает соответствующего направлению, сотрудника"""
+    form = AddTask()
+    form.direction.choices = Direction.get_directions()
+    if form.validate_on_submit():
+        direction = form.direction.data
+        description = form.description.data
+        engineer_calculate = EngineerCalculateMetriks()
+        potential_engineers = engineer_calculate.find_vacation(direction)
+        direction_id = Direction.get_direction_id_by_name(direction)
+        today = datetime.now()
+        # 1) вычисляются потенциальные инженеры на задачу - список [3, 5] айдишники инженеров
+        if len(potential_engineers) > 1:
+            tasks_count_result = engineer_calculate.count_tasks(potential_engineers)
+            if len(tasks_count_result) > 1:
+                # compare_last_orders_result = engineer_calculate.compare_last_orders(tasks_count_result)
+                id = engineer_calculate.compare_last_orders(tasks_count_result)
+                Task.add_task(description, direction_id, 1, id, today)
+                flash(f'Задачу направления {direction} - назначаем на инженера - ' + Engineer.get_fullname_by_id(id), 'success')
+            elif len(tasks_count_result) == 1:
+                id = tasks_count_result[0]
+                Task.add_task(description, direction_id, 1, id, today)
+                flash(f'Задачу направления {direction} - назначаем на инженера - ' + Engineer.get_fullname_by_id(id), 'success')
+        elif len(potential_engineers) == 1:
+            id = potential_engineers[0]
+            Task.add_task(description, direction_id, 1, id, today)
+            flash(f'Задачу направления {direction} - назначаем на инженера - ' + Engineer.get_fullname_by_id(id), 'success')
+        else:
+            flash(f'На данный момент на задачу: {direction}, нет инженеров!', 'error')
+        return redirect(url_for('add_task'))
+    return render_template("add_task.html", username=username,
+                                            engineer_name=engineer_name,
+                                            working_position=working_position,
+                                            short_name=short_name, form=form)
+
