@@ -191,6 +191,7 @@ class Engineer(Base):
                     session.rollback()
             else:
                 logger.error(f"Инженер с id {employee_id} не найден")
+
 class Direction(Base):
     __tablename__ = 'direction'
     id = Column(Integer(), primary_key=True)
@@ -198,6 +199,17 @@ class Direction(Base):
     tasks = relationship('Task', backref='direction')
     engineers = relationship("Engineer", secondary='engineer_direction', overlaps="direction")
 
+    @classmethod
+    def add_direction(cls, name: str):
+        """Метод класса который добавляет направления сотрудников в бд direction"""
+        direction = cls(name=name)
+        with sessionfactory() as session:
+            session.add(direction)
+            try:
+                session.commit()
+            except Exception as e:
+                logger.error(f"Ошибка {e} при добавлении данных в таблицу Direction(Направления)")
+                session.rollback()
 
 class Task(Base):
     __tablename__ = 'task'
