@@ -39,3 +39,29 @@ def index():
 @app.route('/db_error')
 def db_error():
     return render_template('db_error.html')
+
+
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    """Роутер /login, который рендерит страницу login.html и при успешной проверке - редиректит на функцию admin_main"""
+    form = LoginForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+        # Проверяем наличие пользователя в базе данных
+        try:
+            engineer = Engineer.get_username(username)
+            if engineer:
+                if password == engineer.password:
+                    # Логин и пароль совпадают
+                    session['username'] = username
+                    return redirect(url_for('admin_main'))
+                else:
+                    # Пароль не совпадает
+                    flash("Неверный пароль")
+            else:
+                flash("Пользователь не найден")
+        except OperationalError as e:
+            logger.error(f"Ошибка соединения с бд! {e}")
+            return redirect(url_for('db_error'))
+    return render_template("login.html", title="Вход", form=form)
