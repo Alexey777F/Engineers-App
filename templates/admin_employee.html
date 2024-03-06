@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}
+  <title>Главная</title>
+{% endblock %}
+
+{% block main %}
+<main id="main" class="main">
+    <div class="pagetitle">
+      <h1>Сотрудники</h1>
+      <nav>
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{{url_for('admin_main')}}">Главная</a></li>
+          <li class="breadcrumb-item active">Сотрудники</li>
+        </ol>
+          <button type="button" class="btn btn-blue" id="add-engineer-btn" onclick="location.href='{{url_for('add_employee')}}'">Добавить сотрудника</button>
+          <button type="button" class="btn btn-yellow" id="edit-engineer-btn" onclick="location.href='{{url_for('edit_employee')}}'">Редактировать сотрудника</button>
+          <button type="button" class="btn btn-red" id="delete-engineer-btn" onclick="location.href='{{url_for('delete_employee')}}'">Удалить сотрудника</button>
+      </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Таблица сотрудников</h5>
+              <!-- Table with stripped rows -->
+              <table class="table datatable">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Фамилия</th>
+                    <th scope="col">Имя</th>
+                    <th scope="col">Отчество</th>
+                    <th scope="col">Направления</th>
+                    <th scope="col">Должность</th>
+                    <th scope="col">Город</th>
+                    <th scope="col">Телефон</th>
+                    <th scope="col">Почта</th>
+                  </tr>
+                </thead>
+             {% for i in engineer_data %}
+                <tr>
+                    <td>{{ i[0] }}</td>
+                    <td>{{ i[1] }}</td>
+                    <td>{{ i[2] }}</td>
+                    <td>{{ i[3] }}</td>
+                    <td>{{ i[4] }}</td>
+                    <td>{{ i[5] }}</td>
+                    <td>{{ i[6] }}</td>
+                    <td>{{ i[7] }}</td>
+                    <td>{{ i[8] }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+              <!-- End Table with stripped rows -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main><!-- End #main -->
+{% endblock %}

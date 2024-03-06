@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="static/login.css">
+    <title>Вход в личный кабинет</title>
+</head>
+<body>
+    <div class="container">
+    <form class="login-form" method="POST">
+        {{ form.hidden_tag() }}
+        <h1>Вход в личный кабинет</h1>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flashes">
+                {% for message in messages %}
+                    {% if message == 'Пользователь не найден' %}
+                        <div class="flash-message-before-login">{{ message }}</div>
+                    {% elif message == 'Неверный пароль' %}
+                        <div class="flash-message-after-login">{{ message }}</div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+        <p>{{ form.username.label() }} {{ form.username() }}</p>
+        <p>{{ form.password.label() }} {{ form.password() }}</p>
+        <p>{{ form.submit() }}</p>
+    </form>
+</div>
+</body>

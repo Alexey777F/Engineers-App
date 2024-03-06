@@ -191,12 +191,42 @@ class Engineer(Base):
                     session.rollback()
             else:
                 logger.error(f"Инженер с id {employee_id} не найден")
+
 class Direction(Base):
     __tablename__ = 'direction'
     id = Column(Integer(), primary_key=True)
     name = Column(String(50))
     tasks = relationship('Task', backref='direction')
     engineers = relationship("Engineer", secondary='engineer_direction', overlaps="direction")
+
+    @classmethod
+    def add_direction(cls, name: str):
+        """Метод класса который добавляет направления сотрудников в бд direction"""
+        direction = cls(name=name)
+        with sessionfactory() as session:
+            session.add(direction)
+            try:
+                session.commit()
+            except Exception as e:
+                logger.error(f"Ошибка {e} при добавлении данных в таблицу Direction(Направления)")
+                session.rollback()
+
+    @classmethod
+    def get_directions(cls):
+        """Метод класса который возвращает список направлений работы сотрудников"""
+        with sessionfactory() as session:
+            directions = [(direction.name) for direction in session.query(cls).all()]
+            if directions:
+                return directions
+            else:
+                return None
+
+    @classmethod
+    def get_direction_id_by_name(cls, name):
+        with sessionfactory() as session:
+            direction_id = session.query(cls).filter(cls.name == name).first()
+            if direction_id:
+                return direction_id.id
 
 
 class Task(Base):
@@ -208,6 +238,17 @@ class Task(Base):
     engineer_id = Column(Integer(), ForeignKey('engineer.id'))
     create_date = Column(Date())
 
+    @classmethod
+    def add_task(cls, description, direction_id, status_id, engineer_id, create_date):
+        """Метод класса который добавляет задачу на сотрудника"""
+        task = cls(description=description, direction_id=direction_id, status_id=status_id, engineer_id=engineer_id, create_date=create_date)
+        with sessionfactory() as session:
+            session.add(task)
+            try:
+                session.commit()
+            except Exception as e:
+                logger.error(f"Ошибка {e} при добавлении данных в таблицу Task(Задачи)")
+                session.rollback()
 
 class Vacation(Base):
     __tablename__ = 'vacation'
@@ -216,8 +257,87 @@ class Vacation(Base):
     start_date = Column(Date())
     end_date = Column(Date())
 
+    @classmethod
+    def add_vacation(cls, engineer_id, start_date, end_date):
+        """Метод класса который добавляет отпуск сотруднику"""
+        vacation = cls(engineer_id=engineer_id, start_date=start_date, end_date=end_date)
+        with sessionfactory() as session:
+            session.add(vacation)
+            try:
+                session.commit()
+            except Exception as e:
+                logger.error(f"Ошибка {e} при добавлении данных в таблицу Vacation(Отпуск)")
+                session.rollback()
+
 
 class Status(Base):
     __tablename__ = 'status'
     id = Column(Integer(), primary_key=True)
     name = Column(String(50))
+
+    @classmethod
+    def add_status(cls, name):
+        """Метод класса который добавляет статусы в таблицу status"""
+        status = cls(name=name)
+        with sessionfactory() as session:
+            session.add(status)
+            try:
+                session.commit()
+            except Exception as e:
+                logger.error(f"Ошибка {e} при добавлении данных в таблицу Status(Статус)")
+                session.rollback()
+
+
+class EngineerCalculateMetriks:
+    """Класс для фильтрации данных по разным параметрам"""
+    def engineers_directions_dict(self) -> Dict:
+        """Метод, который возвращает словарь {id: [список направлений}"""
+        engineer_direction_dict = {}
+        with sessionfactory() as session:
+            engineers = session.query(Engineer).all()
+            for engineer in engineers:
+                engineer_direction_dict[f"{engineer.id}"] = [direction.name for direction in engineer.direction]
+        return engineer_direction_dict
+
+    def find_vacation(self, direction: str) -> List:
+        """Функция в зависимости от направления и словаря с направлениями сравнивает список дат отпусков каждого инженера с сегодняшней датой"""
+        date = datetime.now().strftime("%d.%m.%Y")
+        potential_managers = [engineer for engineer, directions in self.engineers_directions_dict().items() if direction in directions]
+        engineer_vacation_dict = {}
+        for i in potential_managers:
+            with sessionfactory() as session:
+                vacations = session.query(Vacation).filter(Vacation.engineer_id == i).first()
+                vacation_dates = [vacations.start_date + timedelta(days=x) for x in
+                                  range((vacations.end_date - vacations.start_date).days + 1)]
+                engineer_vacation_dict[vacations.engineer_id] = vacation_dates
+        for engineer_id, dates in engineer_vacation_dict.items():
+            if date in [d.strftime("%d.%m.%Y") for d in dates]:
+                potential_managers.remove(str(engineer_id))
+        return potential_managers
+
+    def count_tasks(self, find_vacation: List) -> List:
+        """Функция которая в зависимости от списка поданных сотрудников находит количество задач каждого сотрудника и сравнивает результат"""
+        with sessionfactory() as session:
+            engineer_tasks = {}
+            for engineer_id in find_vacation:
+                tasks_count = session.query(Task).filter(Task.engineer_id == engineer_id).count()
+                engineer_tasks[engineer_id] = tasks_count if tasks_count else 0
+            # Сравниваем количество задач между инженерами
+            if engineer_tasks[find_vacation[0]] == engineer_tasks[find_vacation[1]]:
+                return find_vacation
+            else:
+                # Должна вернуть список из 1-го значения - айди инженера у кого меньше заявок
+                return [min(find_vacation, key=lambda x: engineer_tasks[x])]
+
+    def compare_last_orders(self, count_tasks: List):
+        """Функция которая получает список с инженерами, вычисляет дату последней заявки между собой и выдает кому дать задачу"""
+        with sessionfactory() as session:
+            engineer_last_orders = {}
+            for engineer_id in count_tasks:
+                last_order_date = session.query(Task.create_date).filter(Task.engineer_id == engineer_id).order_by(
+                    Task.create_date.desc()).first()
+                engineer_last_orders[engineer_id] = last_order_date[0] if last_order_date else None
+            if engineer_last_orders[count_tasks[0]] == engineer_last_orders[count_tasks[1]]:
+                return count_tasks[0]
+            else:
+                return min(count_tasks, key=lambda x: engineer_last_orders[x])
