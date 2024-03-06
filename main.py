@@ -29,3 +29,8 @@ def set_engineer_session(func: Callable) -> Callable:
         return redirect(url_for('login'))
     return wrapper
 
+
+@app.route('/')
+def index():
+    """Роутер / который редиректит на login"""
+    return redirect(url_for('login'), 302)
