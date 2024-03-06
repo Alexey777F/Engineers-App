@@ -65,3 +65,12 @@ def login():
             logger.error(f"Ошибка соединения с бд! {e}")
             return redirect(url_for('db_error'))
     return render_template("login.html", title="Вход", form=form)
+
+
+@app.route('/admin/main', methods=["POST", "GET"])
+@set_engineer_session
+def admin_main(username, engineer_name, working_position, short_name):
+    """Роутер /admin_main, который отображает главную страницу"""
+    engineer_data = Engineer.get_all_eng_data()
+    return render_template("admin_main.html", username=username, engineer_name=engineer_name, working_position=working_position,
+                            short_name=short_name, engineer_data=engineer_data)
