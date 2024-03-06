@@ -122,3 +122,35 @@ def add_task(username, engineer_name, working_position, short_name):
                                             working_position=working_position,
                                             short_name=short_name, form=form)
 
+
+@app.route('/admin/employee/add_employee', methods=["POST", "GET"])
+@set_engineer_session
+def add_employee(username, engineer_name, working_position, short_name):
+    """Роутер /add_employee, который содержит форму добавления сотрудника в бд"""
+    form = AddEmployee()
+    form.direction.choices = Direction.get_directions()
+    if form.validate_on_submit():
+        username_form = form.username.data
+        password = form.password.data
+        last_name = form.last_name.data
+        name = form.name.data
+        patronymic = form.patronymic.data
+        working_position = form.working_position.data
+        city = form.city.data
+        phone_number = form.phone_number.data
+        email = form.email.data
+        choice_directions = form.direction.data
+        date = datetime.now()
+        start_date = datetime.strptime(str(form.start_date.data), '%Y-%m-%d').date()
+        end_date = datetime.strptime(str(form.end_date.data), '%Y-%m-%d').date()
+        Engineer.add_engineer(username=username_form, password=password, last_name=last_name, name=name,
+                              patronymic=patronymic, working_position=working_position, city=city,
+                              phone_number=phone_number, email=email, created_on=date)
+        Engineer.add_engineer_directions(username_form, last_name, choice_directions)
+        engineer = Engineer.get_id_by_username(username_form)
+        Vacation.add_vacation(engineer, start_date, end_date)
+        flash(f'Данные инженера: {last_name} {name} {patronymic} успешно добавлены!', 'success')
+        return redirect(url_for("add_employee"))
+    return render_template("add_employee.html", username=username, engineer_name=engineer_name,
+                           working_position=working_position, short_name=short_name, form=form)
+
