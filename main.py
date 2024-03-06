@@ -190,3 +190,13 @@ def delete_employee(username, engineer_name, working_position, short_name):
     return render_template("delete_employee.html", username=username, engineer_name=engineer_name,
                            working_position=working_position, short_name=short_name, form=form)
 
+
+@app.route('/admin/profile', methods=["POST", "GET"])
+@set_engineer_session
+def profile(username, engineer_name, working_position, short_name):
+    """Роутер /profile который отображает страницу profile.html и отображает данные из таблицы engineer"""
+    profile_data = Engineer.get_profile_data(username)
+    return render_template("profile.html", username=username, engineer_name=engineer_name, working_position=working_position,
+                           short_name=short_name, profile_data=profile_data)
+
+
