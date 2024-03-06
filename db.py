@@ -249,12 +249,25 @@ class Task(Base):
             except Exception as e:
                 logger.error(f"Ошибка {e} при добавлении данных в таблицу Task(Задачи)")
                 session.rollback()
+
 class Vacation(Base):
     __tablename__ = 'vacation'
     id = Column(Integer(), primary_key=True)
     engineer_id = Column(Integer(), ForeignKey('engineer.id'))
     start_date = Column(Date())
     end_date = Column(Date())
+
+    @classmethod
+    def add_vacation(cls, engineer_id, start_date, end_date):
+        """Метод класса который добавляет отпуск сотруднику"""
+        vacation = cls(engineer_id=engineer_id, start_date=start_date, end_date=end_date)
+        with sessionfactory() as session:
+            session.add(vacation)
+            try:
+                session.commit()
+            except Exception as e:
+                logger.error(f"Ошибка {e} при добавлении данных в таблицу Vacation(Отпуск)")
+                session.rollback()
 
 
 class Status(Base):
