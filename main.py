@@ -200,3 +200,12 @@ def profile(username, engineer_name, working_position, short_name):
                            short_name=short_name, profile_data=profile_data)
 
 
+@app.route('/logout')
+def logout():
+    """Роутер /logout который завершает сессию и редиректит на страницу входа и прохождения авторизации"""
+    session.clear()
+    return redirect(url_for('login'))
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5140, debug=True)
