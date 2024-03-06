@@ -329,3 +329,15 @@ class EngineerCalculateMetriks:
                 # Должна вернуть список из 1-го значения - айди инженера у кого меньше заявок
                 return [min(find_vacation, key=lambda x: engineer_tasks[x])]
 
+    def compare_last_orders(self, count_tasks: List):
+        """Функция которая получает список с инженерами, вычисляет дату последней заявки между собой и выдает кому дать задачу"""
+        with sessionfactory() as session:
+            engineer_last_orders = {}
+            for engineer_id in count_tasks:
+                last_order_date = session.query(Task.create_date).filter(Task.engineer_id == engineer_id).order_by(
+                    Task.create_date.desc()).first()
+                engineer_last_orders[engineer_id] = last_order_date[0] if last_order_date else None
+            if engineer_last_orders[count_tasks[0]] == engineer_last_orders[count_tasks[1]]:
+                return count_tasks[0]
+            else:
+                return min(count_tasks, key=lambda x: engineer_last_orders[x])
