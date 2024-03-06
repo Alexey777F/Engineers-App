@@ -74,3 +74,14 @@ def admin_main(username, engineer_name, working_position, short_name):
     engineer_data = Engineer.get_all_eng_data()
     return render_template("admin_main.html", username=username, engineer_name=engineer_name, working_position=working_position,
                             short_name=short_name, engineer_data=engineer_data)
+
+
+@app.route('/admin/employee', methods=["POST", "GET"])
+@set_engineer_session
+def admin_employee(username, engineer_name, working_position, short_name):
+    """Роутер /admin_employee, который отображает страницу с данными сотрудников"""
+    engineer_data = Engineer.get_all_eng_data()
+    return render_template("admin_employee.html", username=username, engineer_name=engineer_name, working_position=working_position,
+                            short_name=short_name, engineer_data=engineer_data)
+
+
