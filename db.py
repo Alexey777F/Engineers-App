@@ -274,3 +274,16 @@ class Status(Base):
     __tablename__ = 'status'
     id = Column(Integer(), primary_key=True)
     name = Column(String(50))
+
+    @classmethod
+    def add_status(cls, name):
+        """Метод класса который добавляет статусы в таблицу status"""
+        status = cls(name=name)
+        with sessionfactory() as session:
+            session.add(status)
+            try:
+                session.commit()
+            except Exception as e:
+                logger.error(f"Ошибка {e} при добавлении данных в таблицу Status(Статус)")
+                session.rollback()
+
