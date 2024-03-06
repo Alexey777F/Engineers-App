@@ -220,6 +220,15 @@ class Direction(Base):
                 return directions
             else:
                 return None
+
+    @classmethod
+    def get_direction_id_by_name(cls, name):
+        with sessionfactory() as session:
+            direction_id = session.query(cls).filter(cls.name == name).first()
+            if direction_id:
+                return direction_id.id
+
+
 class Task(Base):
     __tablename__ = 'task'
     id = Column(Integer(), primary_key=True)
