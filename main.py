@@ -7,3 +7,5 @@ from typing import Callable
 from app_config import app
 from sqlalchemy.exc import OperationalError
 from logger_conf import Logger
+
+logger = Logger()
