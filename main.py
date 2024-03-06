@@ -174,3 +174,19 @@ def edit_employee(username, engineer_name, working_position, short_name):
         return redirect(url_for("admin_employee"))
     return render_template("edit_employee.html", username=username, engineer_name=engineer_name,
                            working_position=working_position, short_name=short_name, form=form)
+
+
+@app.route('/admin/employee/delete_employee', methods=["POST", "GET"])
+@set_engineer_session
+def delete_employee(username, engineer_name, working_position, short_name):
+    """Роутер /delete_employee, который форму удаления для сотрудника"""
+    form = DeleteEmployee()
+    form.employees.choices = [(engineer_id, engineer_name) for engineer_id, engineer_name in Engineer.get_engineers().items()]
+    if form.validate_on_submit():
+        employee_id = form.employees.data
+        Engineer.delete_engineer(employee_id)
+        flash(f'Данные инженера успешно удалены', 'success')
+        return redirect(url_for("delete_employee"))
+    return render_template("delete_employee.html", username=username, engineer_name=engineer_name,
+                           working_position=working_position, short_name=short_name, form=form)
+
