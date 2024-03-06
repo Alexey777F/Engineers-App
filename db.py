@@ -290,7 +290,6 @@ class Status(Base):
 
 class EngineerCalculateMetriks:
     """Класс для фильтрации данных по разным параметрам"""
-    # @lru_cache(maxsize=None)
     def engineers_directions_dict(self) -> Dict:
         """Метод, который возвращает словарь {id: [список направлений}"""
         engineer_direction_dict = {}
@@ -299,3 +298,19 @@ class EngineerCalculateMetriks:
             for engineer in engineers:
                 engineer_direction_dict[f"{engineer.id}"] = [direction.name for direction in engineer.direction]
         return engineer_direction_dict
+
+    def find_vacation(self, direction: str) -> List:
+        """Функция в зависимости от направления и словаря с направлениями сравнивает список дат отпусков каждого инженера с сегодняшней датой"""
+        date = datetime.now().strftime("%d.%m.%Y")
+        potential_managers = [engineer for engineer, directions in self.engineers_directions_dict().items() if direction in directions]
+        engineer_vacation_dict = {}
+        for i in potential_managers:
+            with sessionfactory() as session:
+                vacations = session.query(Vacation).filter(Vacation.engineer_id == i).first()
+                vacation_dates = [vacations.start_date + timedelta(days=x) for x in
+                                  range((vacations.end_date - vacations.start_date).days + 1)]
+                engineer_vacation_dict[vacations.engineer_id] = vacation_dates
+        for engineer_id, dates in engineer_vacation_dict.items():
+            if date in [d.strftime("%d.%m.%Y") for d in dates]:
+                potential_managers.remove(str(engineer_id))
+        return potential_managers
