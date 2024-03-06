@@ -238,7 +238,17 @@ class Task(Base):
     engineer_id = Column(Integer(), ForeignKey('engineer.id'))
     create_date = Column(Date())
 
-
+    @classmethod
+    def add_task(cls, description, direction_id, status_id, engineer_id, create_date):
+        """Метод класса который добавляет задачу на сотрудника"""
+        task = cls(description=description, direction_id=direction_id, status_id=status_id, engineer_id=engineer_id, create_date=create_date)
+        with sessionfactory() as session:
+            session.add(task)
+            try:
+                session.commit()
+            except Exception as e:
+                logger.error(f"Ошибка {e} при добавлении данных в таблицу Task(Задачи)")
+                session.rollback()
 class Vacation(Base):
     __tablename__ = 'vacation'
     id = Column(Integer(), primary_key=True)
