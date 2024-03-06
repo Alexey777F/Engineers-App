@@ -211,6 +211,15 @@ class Direction(Base):
                 logger.error(f"Ошибка {e} при добавлении данных в таблицу Direction(Направления)")
                 session.rollback()
 
+    @classmethod
+    def get_directions(cls):
+        """Метод класса который возвращает список направлений работы сотрудников"""
+        with sessionfactory() as session:
+            directions = [(direction.name) for direction in session.query(cls).all()]
+            if directions:
+                return directions
+            else:
+                return None
 class Task(Base):
     __tablename__ = 'task'
     id = Column(Integer(), primary_key=True)
