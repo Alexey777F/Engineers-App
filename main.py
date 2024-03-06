@@ -34,3 +34,8 @@ def set_engineer_session(func: Callable) -> Callable:
 def index():
     """Роутер / который редиректит на login"""
     return redirect(url_for('login'), 302)
+
+
+@app.route('/db_error')
+def db_error():
+    return render_template('db_error.html')
