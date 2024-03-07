@@ -1,0 +1,113 @@
+version: "3.9"
+services:
+  postgres:
+    container_name: postgres_container
+    image: postgres:14.8-alpine3.18
+    command:
+      - "postgres"
+      - "-c"
+      - "max_connections=50"
+      - "-c"
+      - "shared_buffers=1GB"
+      - "-c"
+      - "effective_cache_size=4GB"
+      - "-c"
+      - "work_mem=16MB"
+      - "-c"
+      - "maintenance_work_mem=512MB"
+      - "-c"
+      - "random_page_cost=1.1"
+      - "-c"
+      - "temp_file_limit=10GB"
+      - "-c"
+      - "log_min_duration_statement=200ms"
+      - "-c"
+      - "idle_in_transaction_session_timeout=10s"
+      - "-c"
+      - "lock_timeout=1s"
+      - "-c"
+      - "statement_timeout=60s"
+      - "-c"
+      - "shared_preload_libraries=pg_stat_statements"
+      - "-c"
+      - "pg_stat_statements.max=10000"
+      - "-c"
+      - "pg_stat_statements.track=all"
+    environment:
+      PG_DB_HOST: 'postgres'
+      POSTGRES_DB: "database"
+      POSTGRES_USER: "user"
+      POSTGRES_PASSWORD: "pass"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d database"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: always
+    networks:
+      - postgres
+
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@1.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+#  nginx:
+#    container_name: nginx_container
+#    image: nginx
+#    ports:
+#      - "443:443"
+##    volumes:
+##      - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
+##      - ./ssl:/etc/ssl
+#    depends_on:
+#      - app
+#    restart: unless-stopped
+#    networks:
+#         - postgres
+
+  app:
+      container_name: app_container
+      build:
+        context: .
+      volumes:
+        - ./project:/app
+      environment:
+        SECRET_KEY: b'\xfb\xa0\xdf\x1e\xe6\xf0\xfb\xeb\xa7\xde\x8fa\x1d1'
+        POSTGRES_USER: "user"
+        POSTGRES_PASSWORD: "pass"
+        PG_DB_HOST: "postgres"
+        PG_DB_NAME: "database"
+      ports:
+        - "5140:5140"
+      depends_on:
+        - postgres
+      restart: always
+      networks:
+        - postgres
+
+
+volumes:
+    db-data:
+    pgadmin:
+
+networks:
+    postgres:
+      driver: bridge
