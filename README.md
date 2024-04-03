@@ -55,4 +55,6 @@
   ![CRM-sys](https://github.com/Alexey777F/Engineers-App/blob/main/eng_app3.png)
   ![CRM-sys](https://github.com/Alexey777F/Engineers-App/blob/main/eng_app4.png)
   ![CRM-sys](https://github.com/Alexey777F/Engineers-App/blob/main/eng_app5.png)
+  ![CRM-sys](https://github.com/Alexey777F/Engineers-App/blob/main/eng_app6.png)
+  ![CRM-sys](https://github.com/Alexey777F/Engineers-App/blob/main/eng_app7.png)
 
